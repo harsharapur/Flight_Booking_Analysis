@@ -64,7 +64,12 @@ with DAG(
             ]
         },
         "runtime_config": {
-            "version": "2.2",  # Specify Dataproc version (if needed)
+            "version": "2.2",
+            "properties": {
+                "spark.executor.instances": "1",  # Minimum executors to stay within CPU quota
+                "spark.executor.cores": "2",       # 1 executor x 2 cores = 2 cores
+                "spark.driver.cores": "2",         # Driver: 2 cores — total: 4 CPUs (within 6 quota)
+            },
         },
         "environment_config": {
             "execution_config": {
