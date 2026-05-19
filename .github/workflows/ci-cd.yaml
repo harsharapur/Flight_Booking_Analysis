@@ -12,38 +12,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository
+      # Checkout the repository (Updated to v4)
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # Authenticate to GCP
+      # Authenticate to GCP (Updated to v2)
       - name: Authenticate to GCP
-        uses: google-github-actions/auth@v1
+        uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      # Setup Google Cloud SDK
+      # Setup Google Cloud SDK (Updated to v2)
       - name: Setup Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
+        uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
       # Upload `variables.json` to Composer bucket
       - name: Upload Variables JSON to GCS
         run: |
-          gsutil cp variables/dev/variables.json gs://us-central1-airflow-test-a0d9d100-bucket/data/dev/variables.json
+          gsutil cp variables/dev/variables.json gs://us-central1-airflow-dev-e4d8e584-bucket/data/dev/variables.json
 
-      # Import Variables into Airflow-DEV
+      # Import Variables into Airflow-DEV (Added sleep for GCS FUSE sync)
       - name: Import Variables into Airflow-DEV
         run: |
+          sleep 10
           gcloud composer environments run airflow-dev \
             --location us-central1 \
             variables import -- /home/airflow/gcs/data/dev/variables.json
 
-      # Sync Spark job to GCS
+      # Sync Spark job to GCS (Fixed potential typo 'projects')
       - name: Upload Spark Job to GCS
         run: |
-          gsutil cp spark_job/spark_transformation_job.py gs://airflow-projects-dev-hr/flight-booking-analysis/spark-job/
+          gsutil cp spark_job/spark_transformation_job.py gs://airflow-projects-gds-dev/flight-booking-analysis/spark-job/
 
       # Sync Airflow DAG to Airflow DEV Composer
       - name: Upload Airflow DAG to DEV Environment (Dag Folder)
@@ -58,38 +59,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository
+      # Checkout the repository (Updated to v4)
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # Authenticate to GCP Account
+      # Authenticate to GCP Account (Updated to v2)
       - name: Authenticate to GCP
-        uses: google-github-actions/auth@v1
+        uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      # Setup Google Cloud SDK
+      # Setup Google Cloud SDK (Updated to v2)
       - name: Setup Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
+        uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
       # Upload `variables.json` to Composer bucket
       - name: Upload Variables JSON to GCS
         run: |
-          gsutil cp variables/prod/variables.json gs://us-central1-airflow-test-a0d9d100-bucket/data/prod/variables.json
+          gsutil cp variables/prod/variables.json gs://us-central1-airflow-prod-46040f60-bucket/data/prod/variables.json
 
-      # Import Variables into Airflow-PROD
+      # Import Variables into Airflow-PROD (Added sleep for GCS FUSE sync)
       - name: Import Variables into Airflow-PROD
         run: |
+          sleep 10
           gcloud composer environments run airflow-prod \
             --location us-central1 \
             variables import -- /home/airflow/gcs/data/prod/variables.json
 
-      # Sync Spark job to GCS
+      # Sync Spark job to GCS (FIXED: Changed dev bucket to prod bucket)
       - name: Upload Spark Job to GCS
         run: |
-          gsutil cp spark_job/spark_transformation_job.py gs://airflow-projects-dev-hr/flight-booking-analysis/spark-job/
+          gsutil cp spark_job/spark_transformation_job.py gs://airflow-projects-gds-prod/flight-booking-analysis/spark-job/
 
       # Sync Airflow DAG to Airflow PROD Composer
       - name: Upload Airflow DAG to PROD Environment (Dag Folder)
