@@ -14,19 +14,28 @@ jobs:
     steps:
       # Checkout the repository
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Authenticate to GCP
       - name: Authenticate to GCP
-        uses: google-github-actions/auth@v1
+        uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       # Setup Google Cloud SDK
       - name: Setup Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
+        uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      # Validate that required files exist before uploading
+      - name: Validate Required Files
+        run: |
+          echo "Checking required files..."
+          ls -lh airflow_job/airflow_job.py
+          ls -lh spark_job/spark_transformation_job.py
+          ls -lh variables/dev/variables.json
+          echo "All files present ✅"
 
       # Upload `variables.json` to Composer bucket
       - name: Upload Variables JSON to GCS
@@ -34,6 +43,7 @@ jobs:
           COMPOSER_BUCKET=$(gcloud composer environments describe airflow-dev \
             --location us-central1 \
             --format="value(config.dagGcsPrefix)" | sed 's/\/dags//')
+          echo "Composer bucket: $COMPOSER_BUCKET"
           gsutil cp variables/dev/variables.json $COMPOSER_BUCKET/data/dev/variables.json
 
       # Import Variables into Airflow-DEV
@@ -46,7 +56,8 @@ jobs:
       # Sync Spark job to GCS
       - name: Upload Spark Job to GCS
         run: |
-          gsutil cp spark_job/spark_transformation_job.py gs://airflow-projects-dev-hr/flight-booking-analysis/spark-job/
+          gsutil cp spark_job/spark_transformation_job.py \
+            gs://airflow-projects-dev-hr/flight-booking-analysis/spark-job/spark_transformation_job.py
 
       # Sync Airflow DAG to Airflow DEV Composer
       - name: Upload Airflow DAG to DEV Environment (Dag Folder)
@@ -54,7 +65,9 @@ jobs:
           COMPOSER_BUCKET=$(gcloud composer environments describe airflow-dev \
             --location us-central1 \
             --format="value(config.dagGcsPrefix)" | sed 's/\/dags//')
-          gsutil cp airflow_job/airflow_job.py $COMPOSER_BUCKET/dags/
+          echo "Uploading DAG to: $COMPOSER_BUCKET/dags/airflow_job.py"
+          gsutil cp airflow_job/airflow_job.py $COMPOSER_BUCKET/dags/airflow_job.py
+          echo "Upload complete ✅"
 
   upload-to-prod:
     if: github.ref == 'refs/heads/main'
@@ -63,19 +76,28 @@ jobs:
     steps:
       # Checkout the repository
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Authenticate to GCP Account
       - name: Authenticate to GCP
-        uses: google-github-actions/auth@v1
+        uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       # Setup Google Cloud SDK
       - name: Setup Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
+        uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      # Validate that required files exist before uploading
+      - name: Validate Required Files
+        run: |
+          echo "Checking required files..."
+          ls -lh airflow_job/airflow_job.py
+          ls -lh spark_job/spark_transformation_job.py
+          ls -lh variables/prod/variables.json
+          echo "All files present ✅"
 
       # Upload `variables.json` to Composer bucket
       - name: Upload Variables JSON to GCS
@@ -83,6 +105,7 @@ jobs:
           COMPOSER_BUCKET=$(gcloud composer environments describe airflow-prod \
             --location us-central1 \
             --format="value(config.dagGcsPrefix)" | sed 's/\/dags//')
+          echo "Composer bucket: $COMPOSER_BUCKET"
           gsutil cp variables/prod/variables.json $COMPOSER_BUCKET/data/prod/variables.json
 
       # Import Variables into Airflow-PROD
@@ -95,7 +118,8 @@ jobs:
       # Sync Spark job to GCS
       - name: Upload Spark Job to GCS
         run: |
-          gsutil cp spark_job/spark_transformation_job.py gs://airflow-projects-prod-hr/flight-booking-analysis/spark-job/
+          gsutil cp spark_job/spark_transformation_job.py \
+            gs://airflow-projects-prod-hr/flight-booking-analysis/spark-job/spark_transformation_job.py
 
       # Sync Airflow DAG to Airflow PROD Composer
       - name: Upload Airflow DAG to PROD Environment (Dag Folder)
@@ -103,4 +127,6 @@ jobs:
           COMPOSER_BUCKET=$(gcloud composer environments describe airflow-prod \
             --location us-central1 \
             --format="value(config.dagGcsPrefix)" | sed 's/\/dags//')
-          gsutil cp airflow_job/airflow_job.py $COMPOSER_BUCKET/dags/
+          echo "Uploading DAG to: $COMPOSER_BUCKET/dags/airflow_job.py"
+          gsutil cp airflow_job/airflow_job.py $COMPOSER_BUCKET/dags/airflow_job.py
+          echo "Upload complete ✅"
