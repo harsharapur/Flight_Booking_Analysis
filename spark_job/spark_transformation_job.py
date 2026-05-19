@@ -1,5 +1,4 @@
 import argparse
-# pyrefly: ignore [missing-import]
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, count, avg, when, lit, expr
 import logging
