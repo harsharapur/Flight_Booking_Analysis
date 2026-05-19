@@ -48,10 +48,7 @@ jobs:
       # Sync Airflow DAG to Airflow DEV Composer
       - name: Upload Airflow DAG to DEV Environment (Dag Folder)
         run: |
-          gcloud composer environments storage dags import \
-            --environment airflow-dev \
-            --location us-central1 \
-            --source airflow_job/airflow_job.py
+          gsutil cp airflow_job/airflow_job.py gs://us-central1-airflow-test-a0d9d100-bucket/dags/airflow_job.py
 
   upload-to-prod:
     if: github.ref == 'refs/heads/main'
@@ -94,7 +91,4 @@ jobs:
       # Sync Airflow DAG to Airflow PROD Composer
       - name: Upload Airflow DAG to PROD Environment (Dag Folder)
         run: |
-          gcloud composer environments storage dags import \
-            --environment airflow-prod \
-            --location us-central1 \
-            --source airflow_job/airflow_job.py
+          gsutil cp airflow_job/airflow_job.py gs://us-central1-airflow-test-a0d9d100-bucket/dags/airflow_job.py
