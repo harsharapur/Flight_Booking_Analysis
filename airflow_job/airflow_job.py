@@ -27,7 +27,11 @@ with DAG(
     gcs_bucket = Variable.get("gcs_bucket", default_var="airflow-projects-dev-hr")
     bq_project = Variable.get("bq_project", default_var="ivory-signer-496620-s1")
     bq_dataset = Variable.get("bq_dataset", default_var=f"flight_data_{env}")
-    tables = Variable.get("tables", deserialize_json=True)
+    tables = Variable.get("tables", deserialize_json=True, default_var={
+        "transformed_table": f"transformed_flight_data_{env}",
+        "route_insights_table": f"route_insights_{env}",
+        "origin_insights_table": f"origin_insights_{env}",
+    })
 
     # Extract table names from the 'tables' variable
     transformed_table = tables["transformed_table"]
