@@ -40,6 +40,11 @@ jobs:
             --location us-central1 \
             variables import -- /home/airflow/gcs/data/dev/variables.json
 
+      # Upload source data file to GCS
+      - name: Upload Source Data to GCS
+        run: |
+          gsutil cp flight_booking.csv gs://airflow-projects-dev-hr/flight-booking-analysis/source-dev/flight_booking.csv
+
       # Sync Spark job to GCS
       - name: Upload Spark Job to GCS
         run: |
@@ -82,6 +87,11 @@ jobs:
           gcloud composer environments run airflow-prod \
             --location us-central1 \
             variables import -- /home/airflow/gcs/data/prod/variables.json
+
+      # Upload source data file to GCS
+      - name: Upload Source Data to GCS
+        run: |
+          gsutil cp flight_booking.csv gs://airflow-projects-dev-hr/flight-booking-analysis/source-prod/flight_booking.csv
 
       # Sync Spark job to GCS
       - name: Upload Spark Job to GCS
